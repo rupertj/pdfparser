@@ -1178,6 +1178,9 @@ class PDFObject
 
                 return new Font($document, $header, $content, $config);
 
+            case 'Annot':
+                return new Annot($document, $header, $content, $config);
+
             default:
                 return new self($document, $header, $content, $config);
         }

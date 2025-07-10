@@ -239,6 +239,23 @@ class Page extends PDFObject
     }
 
     /**
+     * Get the annotations on this page.
+     * 
+     * @return Annot[]
+     */
+    public function getAnnotations(): array
+    {
+      $rtn = [];
+      $annotations = $this->get('Annots');
+      foreach ($annotations->getRawContent() as $element) {
+        if ($element instanceof ElementXRef) {
+          $rtn[] = $element->getObject();
+        }
+      }
+      return $rtn;
+    }
+
+    /**
      * Return true if the current page is a (setasign\Fpdi\Fpdi) FPDI/FPDF document
      *
      * The metadata 'Producer' should have the value of "FPDF" . FPDF_VERSION if the
