@@ -240,16 +240,18 @@ class Page extends PDFObject
 
     /**
      * Get the annotations on this page.
-     * 
+     *
      * @return Annot[]
      */
     public function getAnnotations(): array
     {
       $rtn = [];
       $annotations = $this->get('Annots');
-      foreach ($annotations->getRawContent() as $element) {
-        if ($element instanceof ElementXRef) {
-          $rtn[] = $element->getObject();
+      if (!$annotations instanceof ElementMissing) {
+        foreach ($annotations->getRawContent() as $element) {
+          if ($element instanceof ElementXRef) {
+            $rtn[] = $element->getObject();
+          }
         }
       }
       return $rtn;
