@@ -1147,9 +1147,19 @@ class PDFObject
         ?string $content,
         ?Config $config = null
     ): self {
-        switch ($header->get('Type')->getContent()) {
+
+        $type = $header->get('Type')->getContent();
+        $subType = $header->get('Subtype')->getContent();
+
+        // If the type of this object isn't set, but we can deduce it from the
+        // subtype, do it.
+        if (($subType === "Link") && ($type === false)) {
+          $type = 'Annot';
+        }
+
+        switch ($type) {
             case 'XObject':
-                switch ($header->get('Subtype')->getContent()) {
+                switch ($subType) {
                     case 'Image':
                         return new Image($document, $header, $config->getRetainImageContent() ? $content : null, $config);
 
@@ -1169,8 +1179,7 @@ class PDFObject
                 return new Encoding($document, $header, $content, $config);
 
             case 'Font':
-                $subtype = $header->get('Subtype')->getContent();
-                $classname = '\Smalot\PdfParser\Font\Font'.$subtype;
+                $classname = '\Smalot\PdfParser\Font\Font'.$subType;
 
                 if (class_exists($classname)) {
                     return new $classname($document, $header, $content, $config);
