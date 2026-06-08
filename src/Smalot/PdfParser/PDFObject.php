@@ -788,9 +788,10 @@ class PDFObject
                             break;
                         }
 
-                        // If the PDFObject is an Image, do nothing as images
-                        // aren't text.
+                        // If the PDFObject is an Image, add a placeholder so
+                        // its position is represented in the text output.
                         if ($xobject instanceof Image) {
+                            $text[] = '[IMAGE:'.$id.']';
                             break;
                         }
 

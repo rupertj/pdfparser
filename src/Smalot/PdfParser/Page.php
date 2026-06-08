@@ -658,6 +658,9 @@ class Page extends PDFObject
                 case 'Q':
                     $extractedData[] = $command;
                     break;
+                case 'Do':
+                    $extractedData[] = $command;
+                    break;
                 default:
             }
         }
@@ -729,14 +732,15 @@ class Page extends PDFObject
 
         $extractedTexts = $this->getTextArray();
         $extractedData = [];
+        $textIndex = 0;
         foreach ($dataCommands as $command) {
             // If we've used up all the texts from getTextArray(), exit
             // so we aren't accessing non-existent array indices
             // Fixes 'undefined array key' errors in Issues #575, #576
-            if (\count($extractedTexts) <= \count($extractedData)) {
+            if (\count($extractedTexts) <= $textIndex) {
                 break;
             }
-            $currentText = $extractedTexts[\count($extractedData)];
+            $currentText = $extractedTexts[$textIndex];
             switch ($command['o']) {
                 /*
                  * BT
@@ -852,6 +856,7 @@ class Page extends PDFObject
                         $data[] = $fontSize;
                     }
                     $extractedData[] = $data;
+                    ++$textIndex;
                     break;
 
                     /*
@@ -865,6 +870,7 @@ class Page extends PDFObject
                     $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
                     $extractedData[] = [$Tm, $currentText];
+                    ++$textIndex;
                     break;
 
                     /*
@@ -883,6 +889,7 @@ class Page extends PDFObject
                     $Ty -= $Tl;
                     $Tm[$y] = (string) $Ty;
                     $extractedData[] = [$Tm, $data[2]]; // Verify
+                    ++$textIndex;
                     break;
 
                 case 'Tf':
@@ -918,6 +925,7 @@ class Page extends PDFObject
                         $data[] = $fontSize;
                     }
                     $extractedData[] = $data;
+                    ++$textIndex;
                     break;
                     /*
                      * q
@@ -932,6 +940,13 @@ class Page extends PDFObject
                      */
                 case 'Q':
                     $concatTm = array_pop($graphicsStatesStack);
+                    break;
+                case 'Do':
+                    // Consume the image placeholder emitted by getTextArray().
+                    if (isset($extractedTexts[$textIndex])
+                        && 0 === strncmp($extractedTexts[$textIndex], '[IMAGE:', 7)) {
+                        ++$textIndex;
+                    }
                     break;
                 default:
             }
